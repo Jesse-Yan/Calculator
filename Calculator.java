@@ -1,26 +1,103 @@
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Stack;
 
 public class Calculator {
+  
+  public static void main(String[] args) {
+    //Type the expression here
+    calculate("1+1");
+  }
+  
+  public static double calculate(String expression) {
+    if(expression.matches("\\-?\\d+"))
+      return Double.valueOf(expression);
+    ArrayList<String> s = new ArrayList<String>();
+    char[] chs = expression.toCharArray();
+    String temp = "";
+    boolean tag = false;
+    for (int i = 0; i < chs.length; i++) {
+      if (chs[i] - '0' >= 0 && chs[i] - '0' <= 9) {
+        temp += chs[i];
 
-  public static Double evaluate(String expression) {
-    String[] spliter = expression.split(" ");
-    Calculate cal = new Calculate(spliter);
+      } else if (chs[i] == '.') {
+        temp += chs[i];
+        
+      } else if (chs[i] == ' ') {
+        if (temp.length() != 0)
+          s.add(temp);
+        temp = "";
+
+      } else if (chs[i] == '-') {
+        if (temp.length() != 0)
+          s.add(temp);
+        temp = "-";
+        if (chs[i + 1] == '(') {
+          if(s.get(s.size() - 1).equals("/") || s.get(s.size() - 1).equals("*")) {
+            s.add("(");
+            tag = true;
+          } else if (s.get(s.size() - 1).equals("-")) {
+            s.set(s.size() - 1, "+");
+            s.add("(");
+          } else if (s.get(s.size() - 1).equals(")") || s.get(s.size() - 1).matches("\\d+")) {
+            s.add("-");
+            s.add("(");
+          } else {
+            s.add("0");
+            s.add("-");
+            s.add("(");
+          }
+          temp = "";
+          i++;
+
+        } else if (chs[i + 1] - '0' >= 0 && chs[i + 1] - '0' <= 9) {
+          if(s.get(s.size() - 1).matches("\\d+")) {
+            s.add("+");
+          } else {
+            continue;
+          }
+        } else {
+          if (temp.length() != 0)
+            s.add(temp);
+          temp = "";
+        }
+
+      } else if (chs[i] == ')' && tag) {
+        s.add(temp);
+        temp = "";
+        s.add(")");
+        s.add("*");
+        s.add("-1");
+      } else {
+        if (temp.length() != 0)
+          s.add(temp);
+        temp = "";
+        temp += chs[i];
+        s.add(temp);
+        temp = "";
+      }
+    }
+    if (temp.length() != 0)
+      s.add(temp);
+    String[] spliter = s.toArray(new String[0]);
+    System.out.println(Arrays.toString(spliter));
+    ModifiedCal cal = new ModifiedCal(spliter);
     double result = cal.doCal();
     return result;
   }
 }
 
 
-class Calculate {
-  private StackX theStackI;
-  private StackY theStackP;
+class ModifiedCal {
+  private Stack<Double> theStackI;
+  private Stack<String> theStackP;
   private String[] input;
   private ArrayList<String> output;
   private double num1, num2, interAns;
 
-  public Calculate(String[] s) {
+  public ModifiedCal(String[] s) {
     this.input = s;
-    theStackP = new StackY(input.length);
+    theStackP = new Stack<String>();
     output = new ArrayList<String>();
   }
 
@@ -29,17 +106,17 @@ class Calculate {
     doParse();
     return theStackI.pop();
   }
-  
+
   public void doParse() {
-    theStackI = new StackX(input.length);
+    theStackI = new Stack<Double>();
     for (int i = 0; i < output.size(); i++) {
       String temp = output.get(i);
-      if(!(temp.equals("+") || temp.equals("-") || temp.equals("*") || temp.equals("/"))) {
+      if (!(temp.equals("+") || temp.equals("-") || temp.equals("*") || temp.equals("/"))) {
         theStackI.push(Double.parseDouble(temp));
       } else {
         num2 = theStackI.pop();
         num1 = theStackI.pop();
-        switch(temp) {
+        switch (temp) {
           case "+":
             interAns = num1 + num2;
             break;
@@ -60,17 +137,17 @@ class Calculate {
       }
     }
   }
-  
+
   public void doTrans() {
     for (int i = 0; i < input.length; i++) {
       String temp = input[i];
-      if(temp.equals("(")) {
+      if (temp.equals("(")) {
         theStackP.push(temp);
-      } else if(temp.equals("+") || temp.equals("-")) {
+      } else if (temp.equals("+") || temp.equals("-")) {
         goOper(temp, 1);
-      } else if(temp.equals("*") || temp.equals("/")) {
+      } else if (temp.equals("*") || temp.equals("/")) {
         goOper(temp, 2);
-      } else if(temp.equals(")")){
+      } else if (temp.equals(")")) {
         goParen();
       } else {
         output.add(temp);
@@ -98,8 +175,10 @@ class Calculate {
 
     while (!theStackP.isEmpty()) {
       String s = theStackP.pop();
-      if (s.equals("("))
+      if (s.equals("(")) {
         theStackP.push(s);
+        break;
+      }
       else {
         int j;
 
@@ -121,52 +200,3 @@ class Calculate {
   }
 }
 
-
-class StackX {
-  private int maxSize;
-  private double[] stackArray;
-  private int top;
-
-  public StackX(int j) {
-    this.maxSize = j;
-    stackArray = new double[maxSize];
-    top = -1;
-  }
-
-  public void push(double s) {
-    stackArray[++top] = s;
-  }
-
-  public double pop() {
-    return stackArray[top--];
-  }
-
-  public boolean isEmpty() {
-    return top == -1;
-  }
-}
-
-
-class StackY {
-  private int maxSize;
-  private String[] stackArray;
-  private int top;
-
-  public StackY(int j) {
-    this.maxSize = j;
-    stackArray = new String[maxSize];
-    top = -1;
-  }
-
-  public void push(String s) {
-    stackArray[++top] = s;
-  }
-
-  public String pop() {
-    return stackArray[top--];
-  }
-
-  public boolean isEmpty() {
-    return top == -1;
-  }
-}
