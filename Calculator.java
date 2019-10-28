@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Stack;
 
 public class Calculator {
@@ -80,7 +79,6 @@ public class Calculator {
     if (temp.length() != 0)
       s.add(temp);
     String[] spliter = s.toArray(new String[0]);
-    System.out.println(Arrays.toString(spliter));
     ModifiedCal cal = new ModifiedCal(spliter);
     double result = cal.doCal();
     return result;
