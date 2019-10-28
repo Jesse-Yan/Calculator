@@ -67,6 +67,7 @@ public class Calculator {
         s.add(")");
         s.add("*");
         s.add("-1");
+        tag = false;
       } else {
         if (temp.length() != 0)
           s.add(temp);
